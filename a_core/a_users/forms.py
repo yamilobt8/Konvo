@@ -2,9 +2,8 @@ from django import forms
 import re
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'}))
+    username = forms.CharField(label="Username", max_length=16, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Entre your username', 'id':'is_username'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter your password'}))
-    
     
 class RegisterForm(forms.Form):
     username = forms.CharField(label="Username", max_length=16, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Entre your username', 'id':'is_username'}))
