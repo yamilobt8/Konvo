@@ -85,7 +85,7 @@ function register_user(username, email, password, registerBtn){
             username_message.innerText = data.message;
         } else if (data.message === 'User registered successfully'){
             window.location.href = '/';
-        } else{
+        } else {
             console.log(data.message);
         }
 
