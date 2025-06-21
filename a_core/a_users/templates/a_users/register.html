@@ -5,8 +5,11 @@
     <script src="{% static 'a_users/password.js' %}"></script>
 {%  endblock %}
 
-{% block body %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'a_users/style.css' %}">
+{% endblock %}
 
+{% block body %}
 
     <div class="d-flex justify-content-center align-items-center vh-100">
             <div class="bg-light p-4 border border-3 border-primary border-opacity-25 rounded shadow w-100 h-auto" style="max-width: 700px;max-height: 650px;">
