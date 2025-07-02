@@ -67,13 +67,15 @@
                     </div>
                 </div>
                 <div class="collapse mt-3" id="collapseForm1">
-                    <form>
-                        <!-- Your form inputs here -->
+                    <form action="{% url 'profile' %}" method="post" id="username-form">
+                        {% csrf_token %}
                         <div class="mb-3">
-                            <label for="username" class="form-label">Edit Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
                         </div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <div class="d-grid gap-2 col-4 mx-auto">
+                            <button type="submit" class="btn btn-primary mb-3 btn-sm">Save</button>
+                        </div>
                     </form>
                 </div>
                 <!-- Email row -->
