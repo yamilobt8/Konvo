@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from django.conf import settings
 from django.shortcuts import render, redirect
-from .forms import RegisterForm, LoginForm
+from .forms import RegisterForm, LoginForm, ChangeUsername
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 import random
@@ -116,7 +116,21 @@ def profile(request):
         last_time = timesince(end, now).replace(',', ' and')
     else:
         last_time = timesince(user.date_joined).replace(',', ' and')
-    return render(request, 'a_users/profile.html', {'user': user,'last_time': last_time})
+
+    if request.method == 'POST':
+        form = ChangeUsername(request.POST)
+        if form.is_valid():
+            new_username = form.cleaned_data.get('username')
+            if new_username != user.username:
+                user.username = new_username
+                user.save()
+                return redirect('profile')
+            else:
+                print('same username')
+                return redirect('profile')
+    else:
+        form = ChangeUsername(initial={'username': user.username})
+        return render(request, 'a_users/profile.html', {'user': user,'last_time': last_time, 'form':form})
 
 def profile_picture(user, username):
     src_path = os.path.join(settings.BASE_DIR, 'a_users', 'static', 'a_users', 'images', 'default.jpeg')
@@ -129,8 +143,5 @@ def profile_picture(user, username):
         profile_picture=f'profile_pics/{username}_default.png'
     )
 
-def time_helper(user):
-    # duration between first login and this moment
-    # check_password(input_password, password_record.old_password)
-    pass
-    # duration between this moment and changed_at password moment
+
+
