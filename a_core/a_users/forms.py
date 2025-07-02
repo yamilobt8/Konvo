@@ -31,3 +31,6 @@ class RegisterForm(forms.Form):
         if len(password) < 8:
             raise forms.ValidationError("Password must be at least 8 characters long.")
         return password
+
+class ChangeUsername(forms.Form):
+    username = forms.CharField(label="Username", max_length=16, widget=forms.TextInput(attrs={'class': 'form-control', 'id':'change_username'}))
