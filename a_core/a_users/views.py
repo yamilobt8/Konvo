@@ -1,4 +1,9 @@
 import json
+import os
+import shutil
+from django.utils import timezone
+
+from django.conf import settings
 from django.shortcuts import render, redirect
 from .forms import RegisterForm, LoginForm
 from django.contrib.auth.models import User
@@ -6,6 +11,10 @@ from django.core.mail import send_mail
 import random
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
+from a_users.models import Profile, PasswordHistory
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.decorators import login_required
+from django.utils.timesince import timesince
 
 def login_view(request):
     if request.method == 'POST':
@@ -68,6 +77,7 @@ def verify_otp(request):
             return JsonResponse({'message': 'OTP verified'})
         return JsonResponse({'message': 'Invalid OTP'})
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
 def register_user(request):
     if request.method == 'POST':
         print(request.body)
@@ -83,6 +93,8 @@ def register_user(request):
             password = data.get('password', '').strip()
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
+            password_record = PasswordHistory.objects.create(user=user, old_password=make_password(password))
+            password_record.save()
             login(request, user)
             send_email(request, email, f'thank you for registering on our site {username}')
             return JsonResponse({'message': 'User registered successfully'})
@@ -93,3 +105,32 @@ def register_user(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+@login_required(login_url="/users/login")
+def profile(request):
+    user = request.user
+    password_records = PasswordHistory.objects.get(user=user)
+    if password_records.password_changed:
+        now = timezone.now()
+        end = password_records.changed_at
+        last_time = timesince(end, now).replace(',', ' and')
+    else:
+        last_time = timesince(user.date_joined).replace(',', ' and')
+    return render(request, 'a_users/profile.html', {'user': user,'last_time': last_time})
+
+def profile_picture(user, username):
+    src_path = os.path.join(settings.BASE_DIR, 'a_users', 'static', 'a_users', 'images', 'default.jpeg')
+    dest_dir = os.path.join(settings.MEDIA_ROOT, 'profile_pics')
+    os.makedirs(dest_dir, exist_ok=True)
+    dest_path = os.path.join(dest_dir, f'{username}_pfp.png')
+    shutil.copy(src_path, dest_path)
+    Profile.objects.create(
+        user=user,
+        profile_picture=f'profile_pics/{username}_default.png'
+    )
+
+def time_helper(user):
+    # duration between first login and this moment
+    # check_password(input_password, password_record.old_password)
+    pass
+    # duration between this moment and changed_at password moment
