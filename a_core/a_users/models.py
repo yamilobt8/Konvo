@@ -16,7 +16,7 @@ class PasswordHistory(models.Model):
     old_password = models.CharField(max_length=128)
     new_password = models.CharField(max_length=128, default='none')
     password_changed = models.BooleanField(default=False)
-    changed_at = models.DateTimeField(auto_now_add=True)
+    changed_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.old_password} -> {self.new_password}"
