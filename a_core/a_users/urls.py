@@ -10,5 +10,7 @@ urlpatterns = [
     path('ajax/verify-otp/', views.verify_otp, name='verify_otp'),
     path('logout', views.logout_view, name='logout'),
     path('profile', views.profile, name='profile'),
+    path('personal-info', views.personal_info, name='personal_info'),
+    path('security', views.security, name='security_info'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
