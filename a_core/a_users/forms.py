@@ -34,3 +34,16 @@ class RegisterForm(forms.Form):
 
 class ChangeUsername(forms.Form):
     username = forms.CharField(label="Username", max_length=16, widget=forms.TextInput(attrs={'class': 'form-control', 'id':'change_username'}))
+
+class ChangePassword(forms.Form):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'old password', 'id':'old_password'}))
+    new_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'new password', 'id':'new_password'}))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'confirm new password', 'id':'confirm_password'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if new_password and confirm_password and new_password != confirm_password:
+            self.add_error('confirm_password', "Passwords do not match.")
+        return cleaned_data
