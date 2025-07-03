@@ -1,0 +1,56 @@
+{% extends 'a_users/profile.html' %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'a_users/change_password.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="main-content p-4" id="security-div" >
+
+        <div class="bg-light p-4 border rounded shadow-sm w-100" style="max-width: 900px;" id="security-div">
+            <h4 class="fw-semibold">Security</h4>
+            <!-- Password row -->
+            <div class="border-top py-3 d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">Password</div>
+                <div>
+                    last updated {{ last_time }}<a href="#" data-bs-toggle="collapse" data-bs-target="#collapseForm2" aria-expanded="false" aria-controls="collapseForm" id="toggleArrow"><i class="bi bi-chevron-right ms-2"></i></a>
+                </div>
+            </div>
+            <div class="collapse mt-3" id="collapseForm2">
+                <form action="{% url 'security_info' %}" method="post" id="password-form">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="{{ password_form.old_password.id_for_label }}" class="mb-2 d-block">
+                            {{ password_form.old_password.label }}:
+                        </label>
+                        {{ password_form.old_password }}
+                        <div id="old_password_message" class="form-text text-danger mt-1"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="{{ password_form.new_password.id_for_label }}" class="mb-2 d-block">
+                            {{ password_form.new_password.label_tag }}
+                        </label>
+                        {{ password_form.new_password }}
+                        <div id="new_password_message" class="form-text text-danger mt-1"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="{{ password_form.confirm_password.id_for_label }}" class="mb-2 d-block">
+                            {{ password_form.confirm_password.label_tag }}
+                        </label>
+                        {{ password_form.confirm_password }}
+                        <div id="confirm_password_message" class="form-text text-danger mt-1"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+            <!-- Email row -->
+            <div class="border-top border-bottom py-3 d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">Email Address</div>
+                <div class="px-3">
+                    {{ user.email }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

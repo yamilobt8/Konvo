@@ -1,0 +1,60 @@
+{% extends 'a_users/profile.html' %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'a_users/general-infos.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="main-content p-4" id="general-infos">
+        <div class="bg-light p-4 border rounded shadow-sm w-100" style="max-width: 900px;" id="general-information">
+            <h4 class="fw-semibold">General Information</h4>
+            <p class="text-muted small">
+                Some of these information can be accessible by other users
+            </p>
+
+            <!-- Profile picture row -->
+            <div class="border-top py-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-semibold">Profile Picture</div>
+                </div>
+                <div class="text-end">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile picture"
+                             class="rounded-circle border" width="60" height="60">
+                    {% else %}
+                        <img src="{% static 'a_users/images/default.jpeg' %}" alt="Default profile picture"
+                             class="rounded-circle border" width="60" height="60">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Username row -->
+            <div class="border-top py-3 d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">Username</div>
+                <div>
+                    {{ user.username }} <a href="#" data-bs-toggle="collapse" data-bs-target="#collapseForm1" aria-expanded="false" aria-controls="collapseForm" id="toggleArrow"><i class="bi bi-chevron-right ms-2"></i></a>
+                </div>
+            </div>
+            <div class="collapse mt-3" id="collapseForm1">
+                <form action="{% url 'personal_info' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ username_form.username.label_tag }}
+                        {{ username_form.username }}
+                    </div>
+                    <div class="d-grid gap-2 col-4 mx-auto">
+                        <button type="submit" class="btn btn-primary mb-3 btn-sm">Save</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Email row -->
+            <div class="border-top border-bottom py-3 d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">Email Address</div>
+                <div class="px-3">
+                    {{ user.email }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
