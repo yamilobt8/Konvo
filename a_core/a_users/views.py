@@ -1,11 +1,13 @@
 import json
 import os
 import shutil
-from django.utils import timezone
 
+from django.contrib.auth.password_validation import password_changed
+from django.utils import timezone
+import re
 from django.conf import settings
 from django.shortcuts import render, redirect
-from .forms import RegisterForm, LoginForm, ChangeUsername
+from .forms import RegisterForm, LoginForm, ChangeUsername, ChangePassword
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 import random
@@ -63,6 +65,7 @@ def send_otp(request):
             print(f"Sending OTP {otp} to {email}")
             return JsonResponse({'message': 'OTP sent Successfully'})
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
 def verify_otp(request):
     if request.method == 'POST':
         try:
@@ -108,29 +111,58 @@ def logout_view(request):
 
 @login_required(login_url="/users/login")
 def profile(request):
+    return render(request, 'a_users/profile.html')
+
+@login_required(login_url="/users/login")
+def personal_info(request):
+    user = request.user
+    if request.method == 'POST':
+        if 'username' in request.POST:
+            username_form = ChangeUsername(request.POST, initial={'username': request.user.username})
+            if username_form.is_valid():
+                new_username = username_form.cleaned_data.get('username')
+                if new_username != user.username:
+                    user.username = new_username
+                    user.save()
+                return redirect('profile')
+    username_form = ChangeUsername(initial={'username': request.user.username})
+    return render(request, 'a_users/personal_info.html', {'user': user, 'username_form':username_form})
+
+@login_required(login_url="/users/login")
+def security(request):
     user = request.user
     password_records = PasswordHistory.objects.get(user=user)
+    print(password_records.password_changed)
     if password_records.password_changed:
+        print(password_records.password_changed)
         now = timezone.now()
         end = password_records.changed_at
         last_time = timesince(end, now).replace(',', ' and')
     else:
         last_time = timesince(user.date_joined).replace(',', ' and')
-
     if request.method == 'POST':
-        form = ChangeUsername(request.POST)
-        if form.is_valid():
-            new_username = form.cleaned_data.get('username')
-            if new_username != user.username:
-                user.username = new_username
-                user.save()
-                return redirect('profile')
-            else:
-                print('same username')
-                return redirect('profile')
-    else:
-        form = ChangeUsername(initial={'username': user.username})
-        return render(request, 'a_users/profile.html', {'user': user,'last_time': last_time, 'form':form})
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        old_password = data.get('old_password', '').strip()
+        new_password = data.get('new_password', '').strip()
+        if check_password(old_password, user.password):
+            password_records.old_password = make_password(old_password)
+            password_records.new_password = make_password(new_password)
+            password_records.password_changed = True
+            password_records.save()
+
+            user.set_password(new_password)
+            user.save()
+            return JsonResponse({'message': 'Password changed successfully'})
+        else:
+            return JsonResponse({'message': 'Incorrect old password'})
+    password_form = ChangePassword(request.POST)
+    return render(request, 'a_users/security.html', {'user': user, 'password_form': password_form, 'last_time': last_time})
+
+
+
 
 def profile_picture(user, username):
     src_path = os.path.join(settings.BASE_DIR, 'a_users', 'static', 'a_users', 'images', 'default.jpeg')
