@@ -2,11 +2,13 @@ import json
 import os
 import shutil
 
-from django.contrib.auth.password_validation import password_changed
+
 from django.utils import timezone
 import re
 from django.conf import settings
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+
 from .forms import RegisterForm, LoginForm, ChangeUsername, ChangePassword
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
@@ -17,6 +19,7 @@ from a_users.models import Profile, PasswordHistory
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.utils.timesince import timesince
+import os
 
 def login_view(request):
     if request.method == 'POST':
@@ -39,10 +42,10 @@ def login_view(request):
     form = LoginForm()
     return render(request, 'a_users/login.html', {'form': form})
 
-def send_email(request, recipient_email, subject):
+def send_email(request, recipient_email, subject, message):
     send_mail(
         subject=subject,
-        message='Thank you for registering at MySite',
+        message=message,
         from_email='bouloujouramin.82@gmail.com',
         recipient_list=[recipient_email],
         fail_silently=False,
@@ -99,7 +102,7 @@ def register_user(request):
             password_record = PasswordHistory.objects.create(user=user, old_password=make_password(password))
             password_record.save()
             login(request, user)
-            send_email(request, email, f'thank you for registering on our site {username}')
+            send_email(request, email, subject=f'thank you for registering on our site {username}', message='Welcome To our site')
             return JsonResponse({'message': 'User registered successfully'})
 
     form = RegisterForm()
@@ -155,6 +158,7 @@ def security(request):
 
             user.set_password(new_password)
             user.save()
+            send_email(request, recipient_email=user.email, subject='Security Alert', message=f'{user.username} Your Password has been changed.')
             return JsonResponse({'message': 'Password changed successfully'})
         else:
             return JsonResponse({'message': 'Incorrect old password'})
@@ -175,5 +179,26 @@ def profile_picture(user, username):
         profile_picture=f'profile_pics/{username}_default.png'
     )
 
+@csrf_exempt
+def change_pfp(request):
+    if request.method == 'POST':
+        if 'profile_picture' not in request.FILES:
+            return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+        image = request.FILES['profile_picture']
+        try:
+            profile_status = Profile.objects.get(user=request.user)
+            if profile_status.profile_picture:
+                profile_status.profile_picture.delete(save=False)
+                profile_status.times_changed += 1
+                image.name = f'{request.user.username}_pfp_{profile_status.times_changed}.png'
+            profile_status.profile_picture = image
+            profile_status.save()
+        except Profile.DoesNotExist:
+            times_changed = 1
+            image.name = f'{request.user.username}_pfp_{times_changed}.png'
+            Profile.objects.create(user=request.user, profile_picture=image, times_changed=times_changed)
 
 
+        return JsonResponse({'message': 'Image Uploaded Successfully'})
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
