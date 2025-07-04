@@ -68,6 +68,7 @@ function send_file(file) {
         } else {
             const alert_failed = document.getElementById('pfp-alert-failed');
             alert_failed.style.display = 'block';
+            alert_failed.innerText = data.message;
         }
     })
     .catch(error => {
