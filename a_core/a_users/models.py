@@ -6,6 +6,7 @@ from django.db.models import Model
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture = models.ImageField(upload_to='profile_pics/')
+    times_changed = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
