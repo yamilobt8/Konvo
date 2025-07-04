@@ -8,7 +8,8 @@ import re
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-
+from PIL import Image as PilImage
+from io import BytesIO
 from .forms import RegisterForm, LoginForm, ChangeUsername, ChangePassword
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
@@ -179,26 +180,45 @@ def profile_picture(user, username):
         profile_picture=f'profile_pics/{username}_default.png'
     )
 
-@csrf_exempt
+
 def change_pfp(request):
     if request.method == 'POST':
-        if 'profile_picture' not in request.FILES:
+        image = request.FILES.get('profile_picture')
+        if not image:
             return JsonResponse({'error': 'No file uploaded'}, status=400)
 
-        image = request.FILES['profile_picture']
+        if image.size > 2 * 1024 * 1024:
+            return JsonResponse({'message': 'File too large (max 2MB)'}, status=400)
+
+        if image.content_type not in ['image/png', 'image/jpeg']:
+            print(image.content_type)
+            return JsonResponse({'message': 'Unsupported image type'}, status=400)
+
         try:
-            profile_status = Profile.objects.get(user=request.user)
-            if profile_status.profile_picture:
-                profile_status.profile_picture.delete(save=False)
-                profile_status.times_changed += 1
-                image.name = f'{request.user.username}_pfp_{profile_status.times_changed}.png'
-            profile_status.profile_picture = image
-            profile_status.save()
-        except Profile.DoesNotExist:
-            times_changed = 1
-            image.name = f'{request.user.username}_pfp_{times_changed}.png'
-            Profile.objects.create(user=request.user, profile_picture=image, times_changed=times_changed)
+            img = PilImage.open(BytesIO(image.read()))
+            img.verify()
+            image.seek(0)
+        except Exception:
+            return JsonResponse({'message': 'Invalid image file content'}, status=400)
+
+        valid_image = os.path.splitext(image.name)[1].lower() in ['.png', '.jpeg', '.jpg']
+        if not valid_image:
+            return JsonResponse({'message': 'Invalid image'}, status=400)
+        else:
+            try:
+                profile_status = Profile.objects.get(user=request.user)
+                if profile_status.profile_picture:
+                    profile_status.profile_picture.delete(save=False)
+                    profile_status.times_changed += 1
+                    image.name = f'{request.user.username}_pfp_{profile_status.times_changed}.png'
+                profile_status.profile_picture = image
+                profile_status.save()
+            except Profile.DoesNotExist:
+                times_changed = 1
+                image.name = f'{request.user.username}_pfp_{times_changed}.png'
+                Profile.objects.create(user=request.user, profile_picture=image, times_changed=times_changed)
 
 
         return JsonResponse({'message': 'Image Uploaded Successfully'})
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
