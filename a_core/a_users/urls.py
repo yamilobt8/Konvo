@@ -12,5 +12,6 @@ urlpatterns = [
     path('profile', views.profile, name='profile'),
     path('personal-info', views.personal_info, name='personal_info'),
     path('security', views.security, name='security_info'),
+    path('change_pfp', views.change_pfp, name='change_pfp'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
