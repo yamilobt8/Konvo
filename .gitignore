@@ -5,3 +5,7 @@ db.sqlite3
 __pycache__
 settings.py
 media
+dump.rdb
+venv
+.python-version
+a_core/debug.log
