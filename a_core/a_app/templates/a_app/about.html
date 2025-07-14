@@ -1,10 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'a_app/layout.html' %}
+{% load static %}
 
-</body>
-</html>
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'a_app/about.css' %}"></link>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'a_app/about.js' %}"></script>
+{% endblock %}
+
+{% block title %} Cat Profiles - Interactive Buttons {% endblock %}
+
+{% block body %}
+<div class="container py-5">
+  <h2 class="mb-4 text-center">Meet Our Cats</h2>
+  <div class="d-flex flex-wrap justify-content-center gap-3 mb-5" id="cat-buttons">
+    <!-- Buttons will appear here -->
+  </div>
+
+  <div class="row g-4 align-items-start">
+    <div class="col-12 col-md-5">
+      <div class="card p-0 border-0 h-100 w-100" id="cat-img-card" style="display:none;">
+        <img id="cat-img" class="img-fluid rounded-0 w-100 h-100 object-fit-cover" src="" alt="Cat" style="display:none;">
+      </div>
+    </div>
+    <div class="col-12 col-md-7">
+      <div class="card p-4 shadow-lg h-100" id="cat-info-card" style="display:none;">
+        <h3 id="cat-name" class="mb-3"></h3>
+        <p id="cat-desc" class="mb-0 fs-5"></p>
+      </div>
+      <div class="text-center text-secondary" id="cat-placeholder">
+        <em>Select a cat to see more details!</em>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
