@@ -1,10 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'a_app/layout.html' %}
+{% load static %}
 
-</body>
-</html>
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'a_app/home.css' %}"></link>
+{% endblock %}
+
+{% block title %}Create Channel{% endblock %}
+
+{% block body %}
+    
+    <div class="d-flex justify-content-center align-items-center vh-100">
+            <div class="bg-light p-4 border border-3 border-primary border-opacity-25 rounded shadow w-100 h-auto" style="max-width: 700px;max-height: 500px;">
+                <h1 class="text-center fs-1">Create a New Channel</h1>
+                {% if messages %}
+                    <div class="alert alert-danger" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="border rounded p-3 mb-5 mt-3">
+                    <form action="{% url 'create_channel' %}" method="post" id="create-channel-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            <div id="username_message" class="form-text text-danger mt-1"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Create Channel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+{% endblock %}
